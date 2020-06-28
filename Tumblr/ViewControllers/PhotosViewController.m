@@ -7,6 +7,8 @@
 //
 
 #import "PhotosViewController.h"
+#import "PostCell.h"
+#import "UIImageView+AFNetworking.h"
 
 @interface PhotosViewController () <UITableViewDataSource, UITableViewDelegate>
 
@@ -40,10 +42,9 @@
 //                NSLog(@"%@", dataDictionary);
 
                 self.posts = dataDictionary[@"response"][@"posts"];
-                NSLog(@"%@", self.posts);
+//                NSLog(@"%@", self.posts);
                 
-                // TODO: Get the posts and store in posts property
-                // TODO: Reload the table view
+                [self.tableView reloadData];
             }
         }];
     [task resume];
@@ -54,7 +55,28 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [[UITableViewCell alloc] init];
+    PostCell *cell = [tableView dequeueReusableCellWithIdentifier:@"PostCell"];
+    
+    NSDictionary *post = self.posts[indexPath.row];
+    NSArray *photos = post[@"photos"];
+    if (photos) {
+        // 1. Get the first photo in the photos array
+        NSDictionary *photo = photos[0];
+
+        // 2. Get the original size dictionary from the photo
+        NSDictionary *originalSize =  photo[@"original_size"];
+
+        // 3. Get the url string from the original size dictionary
+        NSString *urlString = originalSize[@"url"];
+
+        // 4. Create a URL using the urlString
+        NSURL *url = [NSURL URLWithString:urlString];
+        
+        // Download the image
+        [cell.postImageView setImageWithURL:url];
+    }
+    
+    self.tableView.rowHeight = 414;
     
     return cell;
 }
